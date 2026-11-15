@@ -5,11 +5,44 @@ import { useState } from "react";
 export default function Home() {
   const [message, setMessage] = useState("");
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setMessage(
-      "Form validation passed. Database integration is our next step.",
-    );
+
+    setMessage("Submitting your application...");
+
+    const formData = new FormData(event.currentTarget);
+
+    const application = {
+      title: formData.get("title"),
+      fullNames: formData.get("fullNames"),
+      surname: formData.get("surname"),
+      idNumber: formData.get("idNumber"),
+      email: formData.get("email"),
+      cellphone: formData.get("cellphone"),
+    };
+
+    try {
+      const response = await fetch("/api/applications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(application),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setMessage(result.error || "Unable to submit your application.");
+        return;
+      }
+
+      setMessage(
+        `Application saved successfully. Reference: ${result.applicationId}`,
+      );
+    } catch {
+      setMessage("Unable to connect to the server. Please try again.");
+    }
   }
 
   return (
