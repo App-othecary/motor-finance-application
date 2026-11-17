@@ -1,5 +1,4 @@
-export const dynamic = "force-dynamic";
-
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
@@ -9,7 +8,7 @@ type PageProps = {
   }>;
 };
 
-export default async function SalespersonPage({ params }: PageProps) {
+async function ApplicationDetails({ params }: PageProps) {
   const { id } = await params;
 
   // Check that the supplied reference is a UUID.
@@ -53,7 +52,6 @@ export default async function SalespersonPage({ params }: PageProps) {
         <section className="rounded-xl bg-white p-6 shadow-sm sm:p-8">
           <div className="mb-6 border-b border-slate-200 pb-5">
             <p className="text-sm text-slate-500">Application reference</p>
-
             <p className="mt-1 break-all font-mono text-sm font-semibold text-slate-900">
               {application.id}
             </p>
@@ -107,7 +105,6 @@ export default async function SalespersonPage({ params }: PageProps) {
 
           <div className="mt-8 border-t border-slate-200 pt-5">
             <p className="text-xs text-slate-500">Submitted on</p>
-
             <p className="mt-1 text-sm text-slate-700">
               {new Date(application.created_at).toLocaleString("en-ZA", {
                 dateStyle: "medium",
@@ -119,5 +116,21 @@ export default async function SalespersonPage({ params }: PageProps) {
         </section>
       </div>
     </main>
+  );
+}
+
+export default function SalespersonPage({ params }: PageProps) {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-100 px-4 py-10">
+          <div className="mx-auto max-w-3xl rounded-xl bg-white p-8">
+            Loading customer application...
+          </div>
+        </main>
+      }
+    >
+      <ApplicationDetails params={params} />
+    </Suspense>
   );
 }

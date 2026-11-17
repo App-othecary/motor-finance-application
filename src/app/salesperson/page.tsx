@@ -1,7 +1,8 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
-export default async function SalespersonDashboard() {
+async function DashboardApplications() {
   const { data: applications, error } = await supabaseAdmin
     .from("applications")
     .select("id, title, full_names, surname, email, created_at, status")
@@ -55,7 +56,6 @@ export default async function SalespersonDashboard() {
         <section className="mb-8 grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl bg-white p-6 shadow-sm">
             <p className="text-sm text-slate-500">Total applications</p>
-
             <p className="mt-2 text-3xl font-bold text-slate-900">
               {totalApplications}
             </p>
@@ -63,7 +63,6 @@ export default async function SalespersonDashboard() {
 
           <div className="rounded-xl bg-white p-6 shadow-sm">
             <p className="text-sm text-slate-500">Awaiting review</p>
-
             <p className="mt-2 text-3xl font-bold text-slate-900">
               {receivedApplications}
             </p>
@@ -75,7 +74,6 @@ export default async function SalespersonDashboard() {
             <h2 className="text-xl font-semibold text-slate-900">
               Customer Applications
             </h2>
-
             <p className="mt-1 text-sm text-slate-500">
               Most recently submitted applications appear first.
             </p>
@@ -86,7 +84,6 @@ export default async function SalespersonDashboard() {
               <p className="font-medium text-slate-700">
                 No applications have been submitted yet.
               </p>
-
               <p className="mt-2 text-sm text-slate-500">
                 New customer applications will appear here.
               </p>
@@ -148,5 +145,21 @@ export default async function SalespersonDashboard() {
         </section>
       </div>
     </main>
+  );
+}
+
+export default function SalespersonDashboard() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-100 p-6">
+          <div className="mx-auto max-w-6xl rounded-xl bg-white p-8">
+            Loading customer applications...
+          </div>
+        </main>
+      }
+    >
+      <DashboardApplications />
+    </Suspense>
   );
 }
