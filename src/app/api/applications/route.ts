@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { screenIndividual } from "@/lib/sanctions-screening";
 
 export async function POST(request: Request) {
   try {
@@ -31,6 +32,10 @@ export async function POST(request: Request) {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Screen the applicant before saving the application.
+    const screening = await screenIndividual(fullNames, surname);
+
+    // Save application and screening result together.
     const { data, error } = await supabase
       .from("applications")
       .insert({
@@ -40,6 +45,12 @@ export async function POST(request: Request) {
         id_number: idNumber,
         email,
         cellphone,
+
+        screening_status: screening.status,
+        screening_message: screening.message,
+        screening_source: screening.source,
+        screened_at: screening.screenedAt,
+        screening_candidates: screening.candidates,
       })
       .select("id")
       .single();
@@ -53,10 +64,21 @@ export async function POST(request: Request) {
       );
     }
 
+    // Screening errors and possible matches are saved, but not cleared.
+    const canProceed = screening.status === "clear";
+
     return NextResponse.json(
       {
         message: "Application saved successfully.",
         applicationId: data.id,
+        screening: {
+          status: screening.status,
+          message: screening.message,
+          source: screening.source,
+          screenedAt: screening.screenedAt,
+          candidates: screening.candidates,
+        },
+        canProceed,
       },
       { status: 201 },
     );
